@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 
 import '/backend/schema/util/firestore_util.dart';
+import '/backend/schema/util/schema_util.dart';
 
 import 'index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -190,6 +191,11 @@ class CharterLoadRecord extends FirestoreRecord {
   int get unitno => _unitno ?? 0;
   bool hasUnitno() => _unitno != null;
 
+  // "manpowerUpdatedOn" field.
+  DateTime? _manpowerUpdatedOn;
+  DateTime? get manpowerUpdatedOn => _manpowerUpdatedOn;
+  bool hasManpowerUpdatedOn() => _manpowerUpdatedOn != null;
+
   void _initializeFields() {
     _currentLoad = castToType<double>(snapshotData['CurrentLoad']);
     _unit = snapshotData['unit'] as String?;
@@ -226,6 +232,7 @@ class CharterLoadRecord extends FirestoreRecord {
     _oRKaru = castToType<int>(snapshotData['OR_karu']);
     _totalKaru = castToType<int>(snapshotData['total_karu']);
     _unitno = castToType<int>(snapshotData['unitno']);
+    _manpowerUpdatedOn = snapshotData['manpowerUpdatedOn'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -298,6 +305,7 @@ Map<String, dynamic> createCharterLoadRecordData({
   int? oRKaru,
   int? totalKaru,
   int? unitno,
+  DateTime? manpowerUpdatedOn,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -336,6 +344,7 @@ Map<String, dynamic> createCharterLoadRecordData({
       'OR_karu': oRKaru,
       'total_karu': totalKaru,
       'unitno': unitno,
+      'manpowerUpdatedOn': manpowerUpdatedOn,
     }.withoutNulls,
   );
 
@@ -381,7 +390,8 @@ class CharterLoadRecordDocumentEquality implements Equality<CharterLoadRecord> {
         e1?.jCOKaru == e2?.jCOKaru &&
         e1?.oRKaru == e2?.oRKaru &&
         e1?.totalKaru == e2?.totalKaru &&
-        e1?.unitno == e2?.unitno;
+        e1?.unitno == e2?.unitno &&
+        e1?.manpowerUpdatedOn == e2?.manpowerUpdatedOn;
   }
 
   @override
@@ -420,7 +430,8 @@ class CharterLoadRecordDocumentEquality implements Equality<CharterLoadRecord> {
         e?.jCOKaru,
         e?.oRKaru,
         e?.totalKaru,
-        e?.unitno
+        e?.unitno,
+        e?.manpowerUpdatedOn
       ]);
 
   @override
