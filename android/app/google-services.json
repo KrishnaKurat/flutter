@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "167632829",
+    "project_id": "c-h-tdemand-lhf09w",
+    "storage_bucket": "c-h-tdemand-lhf09w.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167632829:android:1eeb81370a496537ca3cd4",
+        "android_client_info": {
+          "package_name": "com.mycompany.chtdemand"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPNr6MHCFdb3K9W2REBONsjr6gSLXiYDA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
