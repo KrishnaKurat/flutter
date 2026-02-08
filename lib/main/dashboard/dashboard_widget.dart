@@ -10,10 +10,16 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'dart:async';
+import 'dart:math';
+import 'dart:ui';
 import '/custom_code/elephantdog.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -388,8 +394,8 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                     .disablerequest,
                                             onChanged: (newValue) async {
                                               safeSetState(() => _model
-                                                  .switchValue = newValue);
-                                              if (newValue) {
+                                                  .switchValue = newValue!);
+                                              if (newValue!) {
                                                 ScaffoldMessenger.of(context)
                                                     .clearSnackBars();
                                                 ScaffoldMessenger.of(context)
@@ -543,7 +549,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                           context.goNamed(
                                             CreateuserWidget.routeName,
                                             extra: <String, dynamic>{
-                                              '__transition_info__':
+                                              kTransitionInfoKey:
                                                   TransitionInfo(
                                                 hasTransition: true,
                                                 transitionType:
@@ -1389,12 +1395,19 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                 color: Color(0x1CFF5963),
                                                                                 borderRadius: BorderRadius.circular(10.0),
                                                                               ),
-                                                                              child: Row(
-                                                                                mainAxisSize: MainAxisSize.max,
-                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                children: [
-                                                                                  Text(
-                                                                                    '!',
+                                                                              child: Align(
+                                                                                alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                child: Padding(
+                                                                                  padding: EdgeInsets.all(3.0),
+                                                                                  child: Text(
+                                                                                    valueOrDefault<String>(
+                                                                                      E2EECrypto.decryptFromJson(
+                                                                                        sortcharterItem.unit,
+                                                                                        FFAppState().UID,
+                                                                                      ),
+                                                                                      'unit',
+                                                                                    ),
+                                                                                    textAlign: TextAlign.center,
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           font: GoogleFonts.inter(
                                                                                             fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
@@ -1405,32 +1418,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                         ),
                                                                                   ),
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsets.all(3.0),
-                                                                                      child: Text(
-                                                                                        valueOrDefault<String>(
-                                                                                          E2EECrypto.decryptFromJson(
-                                                                                            sortcharterItem.unit,
-                                                                                            FFAppState().UID,
-                                                                                          ),
-                                                                                          'unit',
-                                                                                        ),
-                                                                                        textAlign: TextAlign.center,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.inter(
-                                                                                                fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
+                                                                                ),
                                                                               ),
                                                                             ),
                                                                             Container(
@@ -2530,6 +2518,17 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                 List<CharterLoadRecord>
                                                     manpowerCharterLoadRecordList =
                                                     snapshot.data!;
+                                                final todayManpower =
+                                                    manpowerCharterLoadRecordList
+                                                        .where((e) =>
+                                                            e.manpowerUpdatedOn !=
+                                                                null &&
+                                                            DateUtils.isSameDay(
+                                                              e.manpowerUpdatedOn!
+                                                                  .toLocal(),
+                                                              getCurrentTimestamp,
+                                                            ))
+                                                        .toList();
 
                                                 return Material(
                                                   color: Colors.transparent,
@@ -3067,6 +3066,28 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                               sortmanpowerIndex) {
                                                                         final sortmanpowerItem =
                                                                             sortmanpower[sortmanpowerIndex];
+                                                                        final isStale =
+                                                                            sortmanpowerItem
+                                                                                        .manpowerUpdatedOn ==
+                                                                                    null ||
+                                                                                !DateUtils.isSameDay(
+                                                                                  sortmanpowerItem
+                                                                                      .manpowerUpdatedOn!
+                                                                                      .toLocal(),
+                                                                                  getCurrentTimestamp,
+                                                                                );
+                                                                        final unitTextStyle =
+                                                                            FlutterFlowTheme.of(context)
+                                                                                .bodyMedium
+                                                                                .override(
+                                                                                  font: GoogleFonts.inter(
+                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                  ),
+                                                                                  letterSpacing: 0.0,
+                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                );
                                                                         return Visibility(
                                                                           visible: (String unit, String searchText) {
                                                                             return searchText == '' ||
@@ -3102,24 +3123,30 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       alignment: AlignmentDirectional(0.0, 0.0),
                                                                                       child: Padding(
                                                                                         padding: EdgeInsets.all(3.0),
-                                                                                        child: Text(
-                                                                                          valueOrDefault<String>(
-                                                                                            E2EECrypto.decryptFromJson(
-                                                                                              sortmanpowerItem.unit,
-                                                                                              FFAppState().UID,
-                                                                                            ),
-                                                                                            'unit',
-                                                                                          ),
+                                                                                        child: RichText(
                                                                                           textAlign: TextAlign.center,
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.inter(
-                                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                          text: TextSpan(
+                                                                                            style: unitTextStyle,
+                                                                                            children: [
+                                                                                              if (isStale)
+                                                                                                TextSpan(
+                                                                                                  text: '! ',
+                                                                                                  style: unitTextStyle.copyWith(
+                                                                                                    color: Color(0xFFFF0000),
+                                                                                                    fontWeight: FontWeight.w700,
+                                                                                                  ),
                                                                                                 ),
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                              TextSpan(
+                                                                                                text: valueOrDefault<String>(
+                                                                                                  E2EECrypto.decryptFromJson(
+                                                                                                    sortmanpowerItem.unit,
+                                                                                                    FFAppState().UID,
+                                                                                                  ),
+                                                                                                  'unit',
+                                                                                                ),
                                                                                               ),
+                                                                                            ],
+                                                                                          ),
                                                                                         ),
                                                                                       ),
                                                                                     ),
@@ -3138,7 +3165,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       alignment: AlignmentDirectional(0.0, 0.0),
                                                                                       child: Text(
                                                                                         valueOrDefault<String>(
-                                                                                          sortmanpowerItem.totalDL.toString(),
+                                                                                          isStale
+                                                                                              ? '0'
+                                                                                              : sortmanpowerItem.totalDL.toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         textAlign: TextAlign.center,
@@ -3168,7 +3197,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       alignment: AlignmentDirectional(0.0, 0.0),
                                                                                       child: Text(
                                                                                         valueOrDefault<String>(
-                                                                                          sortmanpowerItem.totalCH.toString(),
+                                                                                          isStale
+                                                                                              ? '0'
+                                                                                              : sortmanpowerItem.totalCH.toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         textAlign: TextAlign.center,
@@ -3198,7 +3229,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       alignment: AlignmentDirectional(0.0, 0.0),
                                                                                       child: Text(
                                                                                         valueOrDefault<String>(
-                                                                                          sortmanpowerItem.totalLeh.toString(),
+                                                                                          isStale
+                                                                                              ? '0'
+                                                                                              : sortmanpowerItem.totalLeh.toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         textAlign: TextAlign.center,
@@ -3348,7 +3381,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                     children: [
                                                                                       TextSpan(
                                                                                         text: valueOrDefault<String>(
-                                                                                          functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrDl).toList()).toString(),
+                                                                                          functions.sumSeats(todayManpower.map((e) => e.offrDl).toList()).toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3379,7 +3412,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       ),
                                                                                       TextSpan(
                                                                                         text: valueOrDefault<String>(
-                                                                                          functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jCODl).toList()).toString(),
+                                                                                          functions.sumSeats(todayManpower.map((e) => e.jCODl).toList()).toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3410,7 +3443,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       ),
                                                                                       TextSpan(
                                                                                         text: valueOrDefault<String>(
-                                                                                          functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.oRDl).toList()).toString(),
+                                                                                          functions.sumSeats(todayManpower.map((e) => e.oRDl).toList()).toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3441,7 +3474,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                       ),
                                                                                       TextSpan(
                                                                                         text: valueOrDefault<String>(
-                                                                                          functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalDL).toList()).toString(),
+                                                                                          functions.sumSeats(todayManpower.map((e) => e.totalDL).toList()).toString(),
                                                                                           '0',
                                                                                         ),
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3536,7 +3569,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                               children: [
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrCH).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.offrCH).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3567,7 +3600,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jcoCh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.jcoCh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3598,7 +3631,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.orCh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.orCh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3629,7 +3662,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalCH).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.totalCH).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3729,7 +3762,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                               children: [
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrLeh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.offrLeh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3760,7 +3793,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jCOLeh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.jCOLeh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3791,7 +3824,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.oRLeh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.oRLeh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3822,7 +3855,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                 ),
                                                                                                 TextSpan(
                                                                                                   text: valueOrDefault<String>(
-                                                                                                    functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalLeh).toList()).toString(),
+                                                                                                    functions.sumSeats(todayManpower.map((e) => e.totalLeh).toList()).toString(),
                                                                                                     '0',
                                                                                                   ),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -3912,6 +3945,18 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                     List<CharterLoadRecord>
                                                         manpowerCharterLoadRecordList =
                                                         snapshot.data!;
+                                                    final todayManpower =
+                                                        manpowerCharterLoadRecordList
+                                                            .where((e) =>
+                                                                e.manpowerUpdatedOn !=
+                                                                    null &&
+                                                                DateUtils
+                                                                    .isSameDay(
+                                                                  e.manpowerUpdatedOn!
+                                                                      .toLocal(),
+                                                                  getCurrentTimestamp,
+                                                                ))
+                                                            .toList();
 
                                                     return Material(
                                                       color: Colors.transparent,
@@ -4401,6 +4446,28 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                               (context, sortmanpowerIndex) {
                                                                             final sortmanpowerItem =
                                                                                 sortmanpower[sortmanpowerIndex];
+                                                                            final isStale =
+                                                                                sortmanpowerItem
+                                                                                            .manpowerUpdatedOn ==
+                                                                                        null ||
+                                                                                    !DateUtils.isSameDay(
+                                                                                      sortmanpowerItem
+                                                                                          .manpowerUpdatedOn!
+                                                                                          .toLocal(),
+                                                                                      getCurrentTimestamp,
+                                                                                    );
+                                                                            final unitTextStyle =
+                                                                                FlutterFlowTheme.of(context)
+                                                                                    .bodyMedium
+                                                                                    .override(
+                                                                                      font: GoogleFonts.inter(
+                                                                                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                      ),
+                                                                                      letterSpacing: 0.0,
+                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                    );
                                                                             return Visibility(
                                                                               visible: (String unit, String searchText) {
                                                                                 return searchText == '' || unit.toLowerCase().contains(searchText.toLowerCase());
@@ -4429,24 +4496,30 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           alignment: AlignmentDirectional(0.0, 0.0),
                                                                                           child: Padding(
                                                                                             padding: EdgeInsets.all(3.0),
-                                                                                            child: Text(
-                                                                                              valueOrDefault<String>(
-                                                                                                E2EECrypto.decryptFromJson(
-                                                                                                  sortmanpowerItem.unit,
-                                                                                                  FFAppState().UID,
-                                                                                                ),
-                                                                                                'unit',
-                                                                                              ),
+                                                                                            child: RichText(
                                                                                               textAlign: TextAlign.center,
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    font: GoogleFonts.inter(
-                                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                              text: TextSpan(
+                                                                                                style: unitTextStyle,
+                                                                                                children: [
+                                                                                                  if (isStale)
+                                                                                                    TextSpan(
+                                                                                                      text: '! ',
+                                                                                                      style: unitTextStyle.copyWith(
+                                                                                                        color: Color(0xFFFF0000),
+                                                                                                        fontWeight: FontWeight.w700,
+                                                                                                      ),
                                                                                                     ),
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                                  TextSpan(
+                                                                                                    text: valueOrDefault<String>(
+                                                                                                      E2EECrypto.decryptFromJson(
+                                                                                                        sortmanpowerItem.unit,
+                                                                                                        FFAppState().UID,
+                                                                                                      ),
+                                                                                                      'unit',
+                                                                                                    ),
                                                                                                   ),
+                                                                                                ],
+                                                                                              ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
@@ -4465,7 +4538,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           alignment: AlignmentDirectional(0.0, 0.0),
                                                                                           child: Text(
                                                                                             valueOrDefault<String>(
-                                                                                              sortmanpowerItem.totalDogra.toString(),
+                                                                                              isStale
+                                                                                                  ? '0'
+                                                                                                  : sortmanpowerItem.totalDogra.toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             textAlign: TextAlign.center,
@@ -4495,7 +4570,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           alignment: AlignmentDirectional(0.0, 0.0),
                                                                                           child: Text(
                                                                                             valueOrDefault<String>(
-                                                                                              sortmanpowerItem.totalChumathang.toString(),
+                                                                                              isStale
+                                                                                                  ? '0'
+                                                                                                  : sortmanpowerItem.totalChumathang.toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             textAlign: TextAlign.center,
@@ -4525,7 +4602,9 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           alignment: AlignmentDirectional(0.0, 0.0),
                                                                                           child: Text(
                                                                                             valueOrDefault<String>(
-                                                                                              sortmanpowerItem.totalKaru.toString(),
+                                                                                              isStale
+                                                                                                  ? '0'
+                                                                                                  : sortmanpowerItem.totalKaru.toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             textAlign: TextAlign.center,
@@ -4662,7 +4741,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                         children: [
                                                                                           TextSpan(
                                                                                             text: valueOrDefault<String>(
-                                                                                              functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrD).toList()).toString(),
+                                                                                              functions.sumSeats(todayManpower.map((e) => e.offrD).toList()).toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4693,7 +4772,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           ),
                                                                                           TextSpan(
                                                                                             text: valueOrDefault<String>(
-                                                                                              functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jcoD).toList()).toString(),
+                                                                                              functions.sumSeats(todayManpower.map((e) => e.jcoD).toList()).toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4724,7 +4803,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           ),
                                                                                           TextSpan(
                                                                                             text: valueOrDefault<String>(
-                                                                                              functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.orD).toList()).toString(),
+                                                                                              functions.sumSeats(todayManpower.map((e) => e.orD).toList()).toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4755,7 +4834,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                           ),
                                                                                           TextSpan(
                                                                                             text: valueOrDefault<String>(
-                                                                                              functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalDogra).toList()).toString(),
+                                                                                              functions.sumSeats(todayManpower.map((e) => e.totalDogra).toList()).toString(),
                                                                                               '0',
                                                                                             ),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4846,7 +4925,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                   children: [
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrChumathang).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.offrChumathang).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4877,7 +4956,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jCOChumathang).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.jCOChumathang).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4908,7 +4987,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.oRChumathang).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.oRChumathang).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4939,7 +5018,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalChumathang).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.totalChumathang).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -5035,7 +5114,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                   children: [
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.offrKaru).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.offrKaru).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -5066,7 +5145,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.jCOKaru).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.jCOKaru).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -5097,7 +5176,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.oRKaru).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.oRKaru).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -5128,7 +5207,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                                                                                     ),
                                                                                                     TextSpan(
                                                                                                       text: valueOrDefault<String>(
-                                                                                                        functions.sumSeats(manpowerCharterLoadRecordList.map((e) => e.totalKaru).toList()).toString(),
+                                                                                                        functions.sumSeats(todayManpower.map((e) => e.totalKaru).toList()).toString(),
                                                                                                         '0',
                                                                                                       ),
                                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -12456,7 +12535,7 @@ class _DashboardWidgetState extends State<DashboardWidget>
                                     context.goNamed(
                                       EditUserPageWidget.routeName,
                                       extra: <String, dynamic>{
-                                        '__transition_info__': TransitionInfo(
+                                        kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
                                           transitionType:
                                               PageTransitionType.rightToLeft,
